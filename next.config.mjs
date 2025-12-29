@@ -1,4 +1,53 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+
+    webpack(config) {
+        // Grab the existing rule that handles SVG imports
+        const fileLoaderRule = config.module.rules.find((rule) =>
+            rule.test?.test?.('.svg'),
+        )
+
+        config.module.rules.push(
+            // Reapply the existing rule, but only for svg imports ending in ?url
+            {
+                ...fileLoaderRule,
+                test: /\.svg$/i,
+                resourceQuery: /url/, // *.svg?url
+            },
+            // Convert all other *.svg imports to React components
+            {
+                test: /\.svg$/i,
+                issuer: fileLoaderRule.issuer,
+                resourceQuery: { not: [...fileLoaderRule.resourceQuery.not, /url/] }, // exclude if *.svg?url
+                use: ['@svgr/webpack'],
+            },
+        )
+
+        // Modify the file loader rule to ignore *.svg, since we have it handled now.
+        fileLoaderRule.exclude = /\.svg$/i
+
+        return config
+    },
+    // 2. Add this new Turbopack configuration
+    turbopack: {
+        rules: {
+            // This tells Turbopack to use @svgr/webpack for all *.svg files
+            '*.svg': {
+                loaders: ['@svgr/webpack'],
+                as: '*.js',
+            },
+        },
+    },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'http',
+                hostname: '192.168.0.4',
+                port: '1346',
+                pathname: '/**',
+            },
+        ]
+    }
+};
 
 export default nextConfig;
