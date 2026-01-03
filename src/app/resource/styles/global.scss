@@ -130,10 +130,10 @@ html {
 }
 
 .contain-fluid {
-    max-width: 1440px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-    margin-top: calc(5rem );
+    margin-top: calc(1rem );
 
     @include mini {
         padding: 0 1rem;
